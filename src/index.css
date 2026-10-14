@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-terminal: #0b0f17;
+    --bg-card: #111827;
+    --bg-card-subtle: #162032;
+    --border-subtle: #1f2937;
+    --text-primary: #f3f4f6;
+    --text-muted: #9ca3af;
+    --accent-bull: #10b981;
+    --accent-bear: #ef4444;
+    --accent-cyan: #06b6d4;
+  }
+
+  *, ::before, ::after {
+    font-family: 'Times New Roman', Times, serif !important;
+  }
+
+  html, body, button, input, select, textarea {
+    font-family: 'Times New Roman', Times, serif !important;
+  }
+
+  body {
+    background-color: #0b0f17;
+    color: #e5e7eb;
+    font-family: 'Times New Roman', Times, serif !important;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Ensure utility classes and numbers also use Times New Roman */
+  .font-mono-num,
+  .font-sans,
+  .font-serif,
+  .font-mono {
+    font-family: 'Times New Roman', Times, serif !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  svg text {
+    font-family: 'Times New Roman', Times, serif !important;
+  }
+}
+
+/* Custom Financial Terminal Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}

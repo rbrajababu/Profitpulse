@@ -1,0 +1,6 @@
+{
+  "name": "ProfitPulse AI — Indian Stock & Option Chain Analysis Platform",
+  "description": "Professional NSE stock and option chain analytics terminal with real-time indicators, Greeks, multi-timeframe setups, backtesting, and AI market research.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
