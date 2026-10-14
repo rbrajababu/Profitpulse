@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FundamentalData } from '../../types/market';
+import { getFallbackFundamentals } from '../../services/clientFallbackData';
 import { Building2, PieChart, ShieldAlert, TrendingUp, Percent, DollarSign } from 'lucide-react';
 
 interface FundamentalAnalysisViewProps {
@@ -7,22 +8,19 @@ interface FundamentalAnalysisViewProps {
 }
 
 export const FundamentalAnalysisView: React.FC<FundamentalAnalysisViewProps> = ({ symbol }) => {
-  const [data, setData] = useState<FundamentalData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<FundamentalData | null>(() => getFallbackFundamentals(symbol));
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchFundamentals = async () => {
-      setLoading(true);
       try {
         const res = await fetch(`/api/market/fundamentals/${symbol}`);
         if (res.ok) {
           const json = await res.json();
           setData(json);
-        } else {
-          setData(null);
         }
       } catch (err) {
-        console.error('Failed to load fundamentals:', err);
+        console.warn('Failed to load fundamentals, using fallback:', err);
       } finally {
         setLoading(false);
       }

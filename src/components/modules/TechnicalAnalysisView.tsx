@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Candle, TechnicalIndicators } from '../../types/market';
+import { getFallbackCandles, getFallbackTechnicals } from '../../services/clientFallbackData';
 import { LineChart, CheckSquare, Square, Eye, EyeOff, Sliders, TrendingUp, Info } from 'lucide-react';
 
 interface TechnicalAnalysisViewProps {
@@ -8,9 +9,9 @@ interface TechnicalAnalysisViewProps {
 
 export const TechnicalAnalysisView: React.FC<TechnicalAnalysisViewProps> = ({ symbol }) => {
   const [timeframe, setTimeframe] = useState<string>('15m');
-  const [candles, setCandles] = useState<Candle[]>([]);
-  const [indicators, setIndicators] = useState<TechnicalIndicators | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [candles, setCandles] = useState<Candle[]>(() => getFallbackCandles(symbol));
+  const [indicators, setIndicators] = useState<TechnicalIndicators | null>(() => getFallbackTechnicals(symbol).indicators);
+  const [loading, setLoading] = useState(false);
 
   // Indicator Visibility Toggles
   const [showEma9, setShowEma9] = useState(true);
@@ -126,8 +127,8 @@ export const TechnicalAnalysisView: React.FC<TechnicalAnalysisViewProps> = ({ sy
         <div className="bg-slate-900 border border-slate-800 p-3 rounded-lg">
           <div className="text-[10px] text-slate-400 font-semibold uppercase">Key Pivot Levels</div>
           <div className="text-xs font-mono-num mt-1 flex flex-col gap-0.5">
-            <span className="text-rose-400">R: {indicators.resistanceLevels.slice(0, 2).map(r => `₹${r}`).join(' | ')}</span>
-            <span className="text-emerald-400">S: {indicators.supportLevels.slice(0, 2).map(s => `₹${s}`).join(' | ')}</span>
+            <span className="text-rose-400">R: {indicators.resistanceLevels.slice(0, 2).map((r: number) => `₹${r}`).join(' | ')}</span>
+            <span className="text-emerald-400">S: {indicators.supportLevels.slice(0, 2).map((s: number) => `₹${s}`).join(' | ')}</span>
           </div>
         </div>
       </div>
@@ -251,7 +252,7 @@ export const TechnicalAnalysisView: React.FC<TechnicalAnalysisViewProps> = ({ sy
           })}
 
           {/* S/R Lines */}
-          {showSr && indicators.resistanceLevels.slice(0, 1).map((r, i) => (
+          {showSr && indicators.resistanceLevels.slice(0, 1).map((r: number, i: number) => (
             <line
               key={`r_${i}`}
               x1={padding.left}
@@ -263,7 +264,7 @@ export const TechnicalAnalysisView: React.FC<TechnicalAnalysisViewProps> = ({ sy
               strokeWidth="1.2"
             />
           ))}
-          {showSr && indicators.supportLevels.slice(0, 1).map((s, i) => (
+          {showSr && indicators.supportLevels.slice(0, 1).map((s: number, i: number) => (
             <line
               key={`s_${i}`}
               x1={padding.left}

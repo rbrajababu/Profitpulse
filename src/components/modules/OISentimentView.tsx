@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OIBuildupItem, BuildupType } from '../../types/market';
+import { getFallbackOIBuildup } from '../../services/clientFallbackData';
 import { Activity, TrendingUp, TrendingDown, RefreshCcw, Filter, AlertTriangle } from 'lucide-react';
 
 interface OISentimentViewProps {
@@ -8,8 +9,8 @@ interface OISentimentViewProps {
 }
 
 export const OISentimentView: React.FC<OISentimentViewProps> = ({ onSelectSymbol, onNavigateToTab }) => {
-  const [buildups, setBuildups] = useState<OIBuildupItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [buildups, setBuildups] = useState<OIBuildupItem[]>(() => getFallbackOIBuildup());
+  const [loading, setLoading] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>('ALL');
 
   const fetchBuildups = async () => {
@@ -20,7 +21,7 @@ export const OISentimentView: React.FC<OISentimentViewProps> = ({ onSelectSymbol
         setBuildups(json);
       }
     } catch (err) {
-      console.error('Failed to fetch OI Buildup:', err);
+      console.warn('Backend OI Buildup unavailable, using fallback data:', err);
     } finally {
       setLoading(false);
     }

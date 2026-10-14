@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Watchlist, AlertRule, TradeJournalEntry, Instrument } from '../../types/market';
+import { getFallbackWatchlists, getFallbackAlerts, getFallbackJournal } from '../../services/clientFallbackData';
 import { Bookmark, Bell, BookOpen, Plus, Trash2, CheckCircle2, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
 interface WatchlistsAlertsJournalProps {
@@ -16,19 +17,19 @@ export const WatchlistsAlertsJournal: React.FC<WatchlistsAlertsJournalProps> = (
   const [activeSubTab, setActiveSubTab] = useState<'watchlists' | 'alerts' | 'journal'>('watchlists');
 
   // Watchlists state
-  const [watchlists, setWatchlists] = useState<Watchlist[]>([]);
-  const [selectedWlId, setSelectedWlId] = useState<string>('');
+  const [watchlists, setWatchlists] = useState<Watchlist[]>(() => getFallbackWatchlists());
+  const [selectedWlId, setSelectedWlId] = useState<string>('wl_default');
   const [newWlName, setNewWlName] = useState('');
   const [addSymbol, setAddSymbol] = useState('');
 
   // Alerts state
-  const [alerts, setAlerts] = useState<AlertRule[]>([]);
+  const [alerts, setAlerts] = useState<AlertRule[]>(() => getFallbackAlerts());
   const [newAlertSymbol, setNewAlertSymbol] = useState('NIFTY');
   const [newAlertCondition, setNewAlertCondition] = useState<AlertRule['condition']>('PRICE_ABOVE');
   const [newAlertTarget, setNewAlertTarget] = useState('25000');
 
   // Trade Journal state
-  const [journal, setJournal] = useState<TradeJournalEntry[]>([]);
+  const [journal, setJournal] = useState<TradeJournalEntry[]>(() => getFallbackJournal());
   const [showNewTradeModal, setShowNewTradeModal] = useState(false);
   const [newTrade, setNewTrade] = useState({
     symbol: 'NIFTY',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TradingSetup, SetupTimeframe } from '../../types/market';
+import { getFallbackTradingSetups } from '../../services/clientFallbackData';
 import { Crosshair, ShieldAlert, CheckCircle2, XCircle, Clock, AlertTriangle, ArrowRight, Filter } from 'lucide-react';
 
 interface TradingSetupsViewProps {
@@ -8,8 +9,8 @@ interface TradingSetupsViewProps {
 }
 
 export const TradingSetupsView: React.FC<TradingSetupsViewProps> = ({ onSelectSymbol, onNavigateToTab }) => {
-  const [setups, setSetups] = useState<TradingSetup[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [setups, setSetups] = useState<TradingSetup[]>(() => getFallbackTradingSetups());
+  const [loading, setLoading] = useState(false);
   const [selectedTf, setSelectedTf] = useState<string>('ALL');
 
   const fetchSetups = async () => {
@@ -20,7 +21,7 @@ export const TradingSetupsView: React.FC<TradingSetupsViewProps> = ({ onSelectSy
         setSetups(json);
       }
     } catch (err) {
-      console.error('Failed to load trading setups:', err);
+      console.warn('Backend trading setups unavailable, using fallback:', err);
     } finally {
       setLoading(false);
     }

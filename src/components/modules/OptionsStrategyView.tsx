@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StrategyAnalysis } from '../../types/market';
+import { getFallbackOptionsStrategy } from '../../services/clientFallbackData';
 import { Scale, ShieldAlert, ArrowRight, TrendingUp, AlertTriangle, Info } from 'lucide-react';
 
 interface OptionsStrategyViewProps {
@@ -8,19 +9,18 @@ interface OptionsStrategyViewProps {
 
 export const OptionsStrategyView: React.FC<OptionsStrategyViewProps> = ({ symbol }) => {
   const [strategy, setStrategy] = useState<string>('BULL_CALL_SPREAD');
-  const [data, setData] = useState<StrategyAnalysis | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<StrategyAnalysis | null>(() => getFallbackOptionsStrategy('BULL_CALL_SPREAD', symbol));
+  const [loading, setLoading] = useState(false);
 
   const fetchStrategy = async () => {
     try {
-      setLoading(true);
       const res = await fetch(`/api/options-strategy?strategy=${strategy}&symbol=${symbol}`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
       }
     } catch (err) {
-      console.error('Failed to load strategy analysis:', err);
+      console.warn('Backend options strategy unavailable, using fallback:', err);
     } finally {
       setLoading(false);
     }

@@ -21,16 +21,17 @@ import { BacktestingView } from './components/modules/BacktestingView';
 import { AdminDashboard } from './components/modules/AdminDashboard';
 import { ExportModal } from './components/modals/ExportModal';
 import { wsClient, ConnectionStatus, PriceTick } from './services/websocketStream';
+import { FALLBACK_INSTRUMENTS, getFallbackProviderStatus } from './services/clientFallbackData';
 import { Activity, ShieldAlert } from 'lucide-react';
 
 export default function App() {
-  const [instruments, setInstruments] = useState<Instrument[]>([]);
+  const [instruments, setInstruments] = useState<Instrument[]>(FALLBACK_INSTRUMENTS);
   const [selectedSymbol, setSelectedSymbol] = useState<string>('NIFTY');
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
-  const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(null);
+  const [providerStatus, setProviderStatus] = useState<ProviderStatus | null>(() => getFallbackProviderStatus().status);
   const [currentUserRole, setCurrentUserRole] = useState<'admin' | 'trader'>('admin');
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [wsStatus, setWsStatus] = useState<ConnectionStatus>('CONNECTING');
   const [wsLatency, setWsLatency] = useState<number>(8);
 
@@ -43,7 +44,9 @@ export default function App() {
 
       if (instRes.ok) {
         const instList = await instRes.json();
-        setInstruments(instList);
+        if (Array.isArray(instList) && instList.length > 0) {
+          setInstruments(instList);
+        }
       }
       if (statusRes.ok) {
         const st = await statusRes.json();
@@ -54,7 +57,7 @@ export default function App() {
         });
       }
     } catch (err) {
-      console.error('Failed to load initial terminal state:', err);
+      console.warn('Backend snapshot unavailable, continuing with fallback engine:', err);
     } finally {
       setLoading(false);
     }

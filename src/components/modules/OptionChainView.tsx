@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OptionChainData, OptionContract } from '../../types/market';
+import { getFallbackOptionChain } from '../../services/clientFallbackData';
 import { Layers, Download, SlidersHorizontal, ArrowUpDown, ShieldAlert, BarChart2 } from 'lucide-react';
 
 interface OptionChainViewProps {
@@ -8,11 +9,11 @@ interface OptionChainViewProps {
 }
 
 export const OptionChainView: React.FC<OptionChainViewProps> = ({ symbol, onSelectSymbol }) => {
-  const [data, setData] = useState<OptionChainData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<OptionChainData | null>(() => getFallbackOptionChain(symbol));
+  const [loading, setLoading] = useState(false);
   const [showGreeks, setShowGreeks] = useState(false);
   const [strikeFilter, setStrikeFilter] = useState<'all' | 'near_atm' | 'otm_only'>('near_atm');
-  const [selectedExpiry, setSelectedExpiry] = useState<string>('');
+  const [selectedExpiry, setSelectedExpiry] = useState<string>('27-MAR-2026');
 
   const fetchChain = async () => {
     try {
@@ -25,7 +26,7 @@ export const OptionChainView: React.FC<OptionChainViewProps> = ({ symbol, onSele
         }
       }
     } catch (err) {
-      console.error('Failed to fetch option chain:', err);
+      console.warn('Backend option chain unavailable, using fallback data:', err);
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Instrument } from '../../types/market';
+import { getFallbackOverview } from '../../services/clientFallbackData';
 import { TrendingUp, TrendingDown, Activity, AlertCircle, ArrowUpRight, ArrowDownRight, Layers, BarChart2 } from 'lucide-react';
 
 interface MarketOverviewProps {
@@ -8,8 +9,8 @@ interface MarketOverviewProps {
 }
 
 export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectSymbol, onNavigateToTab }) => {
-  const [overview, setOverview] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [overview, setOverview] = useState<any>(() => getFallbackOverview());
+  const [loading, setLoading] = useState(false);
 
   const fetchOverview = async () => {
     try {
@@ -19,7 +20,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectSymbol, 
         setOverview(data);
       }
     } catch (err) {
-      console.error('Failed to load market overview:', err);
+      console.warn('Backend overview unavailable, using fallback data:', err);
     } finally {
       setLoading(false);
     }

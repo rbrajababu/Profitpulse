@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScreenerResult } from '../../types/market';
+import { getFallbackScreener } from '../../services/clientFallbackData';
 import { Search, Filter, ArrowUpRight, ArrowDownRight, BookmarkPlus, Layers } from 'lucide-react';
 
 interface MarketScreenerViewProps {
@@ -9,8 +10,8 @@ interface MarketScreenerViewProps {
 
 export const MarketScreenerView: React.FC<MarketScreenerViewProps> = ({ onSelectSymbol, onNavigateToTab }) => {
   const [filterId, setFilterId] = useState<string>('breakout_bullish');
-  const [results, setResults] = useState<ScreenerResult[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [results, setResults] = useState<ScreenerResult[]>(() => getFallbackScreener('breakout_bullish'));
+  const [loading, setLoading] = useState(false);
 
   const filters = [
     { id: 'breakout_bullish', label: 'Upper Bollinger Breakout', desc: 'Price expanding above 20-period upper band with high RSI.' },
@@ -22,14 +23,13 @@ export const MarketScreenerView: React.FC<MarketScreenerViewProps> = ({ onSelect
 
   const fetchResults = async () => {
     try {
-      setLoading(true);
       const res = await fetch(`/api/screener?filter=${filterId}`);
       if (res.ok) {
         const json = await res.json();
         setResults(json);
       }
     } catch (err) {
-      console.error('Failed to run screener:', err);
+      console.warn('Backend screener unavailable, using fallback:', err);
     } finally {
       setLoading(false);
     }
@@ -136,7 +136,7 @@ export const MarketScreenerView: React.FC<MarketScreenerViewProps> = ({ onSelect
                       </td>
                       <td className="py-2.5 px-3 font-sans">
                         <div className="flex flex-wrap gap-1">
-                          {r.matchedCriteria.map((crit, idx) => (
+                          {r.matchedCriteria.map((crit: string, idx: number) => (
                             <span key={idx} className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700/60">
                               {crit}
                             </span>
