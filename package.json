@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "tsx server.ts",
     "start": "tsx server.ts",
-    "build": "vite build",
+    "build": "vite build && rm -rf docs && cp -r dist docs",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "preview": "vite preview",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist docs",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
@@ -33,7 +33,6 @@
     "@types/react-dom": "^19.3.0",
     "@types/ws": "^8.18.2",
     "autoprefixer": "^10.4.21",
-    "esbuild": "^0.25.0",
     "gh-pages": "^6.3.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
