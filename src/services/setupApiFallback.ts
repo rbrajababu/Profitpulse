@@ -62,7 +62,9 @@ function jsonResponse(data: any, status = 200): Response {
 
 function handleSyntheticRoute(url: string, init?: RequestInit): Response {
   const parsedUrl = new URL(url, window.location.origin);
-  const pathname = parsedUrl.pathname;
+  const fullPath = parsedUrl.pathname;
+  const apiIndex = fullPath.indexOf('/api/');
+  const pathname = apiIndex !== -1 ? fullPath.substring(apiIndex) : fullPath;
   const searchParams = parsedUrl.searchParams;
 
   // 1. /api/market/instruments
@@ -82,8 +84,9 @@ function handleSyntheticRoute(url: string, init?: RequestInit): Response {
 
   // 4. /api/market/option-chain/:symbol
   if (pathname.startsWith('/api/market/option-chain/')) {
-    const symbol = pathname.split('/').pop() || 'NIFTY';
-    return jsonResponse(getFallbackOptionChain(decodeURIComponent(symbol)));
+    const rawSymbol = pathname.replace('/api/market/option-chain/', '').split('/')[0];
+    const symbol = rawSymbol ? decodeURIComponent(rawSymbol) : 'NIFTY';
+    return jsonResponse(getFallbackOptionChain(symbol));
   }
 
   // 5. /api/market/oi-buildup
@@ -93,20 +96,23 @@ function handleSyntheticRoute(url: string, init?: RequestInit): Response {
 
   // 6. /api/market/candles/:symbol
   if (pathname.startsWith('/api/market/candles/')) {
-    const symbol = pathname.split('/').pop() || 'NIFTY';
-    return jsonResponse(getFallbackCandles(decodeURIComponent(symbol)));
+    const rawSymbol = pathname.replace('/api/market/candles/', '').split('/')[0];
+    const symbol = rawSymbol ? decodeURIComponent(rawSymbol) : 'NIFTY';
+    return jsonResponse(getFallbackCandles(symbol));
   }
 
   // 7. /api/market/indicators/:symbol
   if (pathname.startsWith('/api/market/indicators/')) {
-    const symbol = pathname.split('/').pop() || 'NIFTY';
-    return jsonResponse(getFallbackTechnicals(decodeURIComponent(symbol)));
+    const rawSymbol = pathname.replace('/api/market/indicators/', '').split('/')[0];
+    const symbol = rawSymbol ? decodeURIComponent(rawSymbol) : 'NIFTY';
+    return jsonResponse(getFallbackTechnicals(symbol));
   }
 
   // 8. /api/market/fundamentals/:symbol
   if (pathname.startsWith('/api/market/fundamentals/')) {
-    const symbol = pathname.split('/').pop() || 'NIFTY';
-    return jsonResponse(getFallbackFundamentals(decodeURIComponent(symbol)));
+    const rawSymbol = pathname.replace('/api/market/fundamentals/', '').split('/')[0];
+    const symbol = rawSymbol ? decodeURIComponent(rawSymbol) : 'NIFTY';
+    return jsonResponse(getFallbackFundamentals(symbol));
   }
 
   // 9. /api/setups
