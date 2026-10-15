@@ -247,6 +247,7 @@ export function getFallbackOverview() {
       unchanged: 0,
       advancesOi: 14200000,
       declinesOi: 8100000,
+      ratio: '1.78',
     },
     indiaVix: {
       symbol: 'INDIAVIX',

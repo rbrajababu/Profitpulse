@@ -21,32 +21,74 @@ export function setupApiFallbackInterceptor() {
   if (isInterceptorInstalled || typeof window === 'undefined') return;
   isInterceptorInstalled = true;
 
-  const originalFetch = window.fetch.bind(window);
+  try {
+    const originalFetch = typeof window.fetch === 'function' ? window.fetch.bind(window) : undefined;
+    if (!originalFetch) return;
 
-  window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-    const urlString = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+    const interceptedFetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+      const urlString = typeof input === 'string' ? input : input instanceof URL ? input.toString() : (input as Request)?.url || '';
 
-    // Only intercept /api/ calls
-    if (urlString.includes('/api/')) {
-      try {
-        const response = await originalFetch(input, init);
-        // If the backend exists and returns a valid response (200-399), use it!
-        if (response.ok) {
+      // Only intercept /api/ calls
+      if (urlString.includes('/api/')) {
+        try {
+          const response = await originalFetch(input, init);
+          // If the backend exists and returns a valid response (200-399), use it!
+          if (response.ok) {
+            return response;
+          }
+          // If status is 404 (standard on GitHub Pages or static hosting for backend routes), fall back
+          if (response.status === 404 || response.status === 502 || response.status === 503) {
+            return handleSyntheticRoute(urlString, init);
+          }
           return response;
-        }
-        // If status is 404 (standard on GitHub Pages or static hosting for backend routes), fall back
-        if (response.status === 404 || response.status === 502 || response.status === 503) {
+        } catch {
+          // Network error (Failed to fetch, CORS, offline, or GitHub Pages static host)
           return handleSyntheticRoute(urlString, init);
         }
-        return response;
-      } catch (networkError) {
-        // Network error (Failed to fetch, CORS, offline, or GitHub Pages static host)
-        return handleSyntheticRoute(urlString, init);
+      }
+
+      return originalFetch(input, init);
+    };
+
+    let installed = false;
+    // Method 1: Try Object.defineProperty on window
+    try {
+      Object.defineProperty(window, 'fetch', {
+        value: interceptedFetch,
+        writable: true,
+        configurable: true,
+      });
+      installed = true;
+    } catch {
+      // Ignore
+    }
+
+    // Method 2: Direct assignment (works on standard browsers)
+    if (!installed) {
+      try {
+        (window as any).fetch = interceptedFetch;
+        installed = true;
+      } catch {
+        // Ignore
       }
     }
 
-    return originalFetch(input, init);
-  };
+    // Method 3: Try Object.defineProperty on Window.prototype if available
+    if (!installed && typeof Window !== 'undefined' && Window.prototype) {
+      try {
+        Object.defineProperty(Window.prototype, 'fetch', {
+          value: interceptedFetch,
+          writable: true,
+          configurable: true,
+        });
+        installed = true;
+      } catch {
+        // Ignore
+      }
+    }
+  } catch (err) {
+    console.warn('API fallback interceptor could not be attached:', err);
+  }
 }
 
 function jsonResponse(data: any, status = 200): Response {

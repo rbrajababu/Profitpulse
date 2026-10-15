@@ -41,11 +41,26 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectSymbol, 
     );
   }
 
-  const { indices, topGainers, topLosers, mostActive, breadth, indiaVix } = overview;
-  const advances = breadth.advances;
-  const declines = breadth.declines;
-  const totalStocks = advances + declines + breadth.unchanged;
+  const { indices, topGainers, topLosers, mostActive, breadth, indiaVix } = overview || {};
+  const advances = breadth?.advances ?? 32;
+  const declines = breadth?.declines ?? 18;
+  const unchanged = breadth?.unchanged ?? 0;
+  const totalStocks = advances + declines + unchanged;
   const advancePercent = Math.round((advances / (totalStocks || 1)) * 100);
+  const breadthRatio = breadth?.ratio ?? (declines > 0 ? (advances / declines).toFixed(2) : '1.78');
+
+  // Handle indiaVix gracefully whether provided as an object { currentPrice, change, changePercent } or a plain number
+  const vixPrice: number = typeof indiaVix === 'object' && indiaVix !== null
+    ? (typeof indiaVix.currentPrice === 'number' ? indiaVix.currentPrice : 13.45)
+    : (typeof indiaVix === 'number' ? indiaVix : 13.45);
+
+  const vixChangePercent: number = typeof indiaVix === 'object' && indiaVix !== null
+    ? (typeof indiaVix.changePercent === 'number' ? indiaVix.changePercent : -2.54)
+    : -0.42;
+
+  const vixChange: number = typeof indiaVix === 'object' && indiaVix !== null
+    ? (typeof indiaVix.change === 'number' ? indiaVix.change : -0.35)
+    : -0.06;
 
   return (
     <div className="p-4 space-y-5 max-w-7xl mx-auto">
@@ -103,7 +118,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectSymbol, 
               </span>
             </div>
             <div className="text-xs text-slate-400 font-mono-num">
-              Ratio: <span className="font-semibold text-slate-200">{breadth.ratio}</span>
+              Ratio: <span className="font-semibold text-slate-200">{breadthRatio}</span>
             </div>
           </div>
 
@@ -115,7 +130,7 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectSymbol, 
             </div>
             <div className="flex items-center justify-between text-xs font-mono-num">
               <span className="text-emerald-400 font-medium">Advances: {advances} ({advancePercent}%)</span>
-              <span className="text-slate-400">Unchanged: {breadth.unchanged}</span>
+              <span className="text-slate-400">Unchanged: {unchanged}</span>
               <span className="text-rose-400 font-medium">Declines: {declines} ({100 - advancePercent}%)</span>
             </div>
           </div>
@@ -130,14 +145,22 @@ export const MarketOverview: React.FC<MarketOverviewProps> = ({ onSelectSymbol, 
                 India VIX Volatility
               </span>
             </div>
-            <span className="text-[10px] text-amber-400 font-semibold bg-amber-950/40 border border-amber-800/40 px-1.5 py-0.5 rounded">
-              LOW VOLATILITY REGIME
+            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${
+              vixPrice < 15
+                ? 'text-amber-400 bg-amber-950/40 border-amber-800/40'
+                : vixPrice < 20
+                ? 'text-cyan-400 bg-cyan-950/40 border-cyan-800/40'
+                : 'text-rose-400 bg-rose-950/40 border-rose-800/40'
+            }`}>
+              {vixPrice < 15 ? 'LOW VOLATILITY REGIME' : vixPrice < 20 ? 'NORMAL VOLATILITY' : 'HIGH VOLATILITY REGIME'}
             </span>
           </div>
 
           <div className="flex items-baseline gap-3 my-1">
-            <span className="text-2xl font-bold font-mono-num text-white">{indiaVix}</span>
-            <span className="text-xs text-emerald-400 font-mono-num font-medium">-0.42% Today</span>
+            <span className="text-2xl font-bold font-mono-num text-white">{vixPrice.toFixed(2)}</span>
+            <span className={`text-xs font-mono-num font-medium ${vixChangePercent <= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {vixChangePercent >= 0 ? '+' : ''}{vixChangePercent}% Today
+            </span>
           </div>
 
           <div className="text-[11px] text-slate-400 mt-2">
