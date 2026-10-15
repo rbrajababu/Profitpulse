@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Instrument, ProviderStatus } from '../types/market';
 import { ConnectionStatus } from '../services/websocketStream';
-import { Search, Download, RefreshCw, Radio, UserCheck, Clock, CheckCircle2, Zap } from 'lucide-react';
+import { Search, Download, RefreshCw, Radio, UserCheck, Clock, CheckCircle2, Zap, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 interface HeaderBarProps {
   instruments: Instrument[];
@@ -28,6 +29,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   wsStatus = 'CONNECTED',
   wsLatency = 8,
 }) => {
+  const { isLight, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -234,6 +236,30 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           >
             <UserCheck className="w-3.5 h-3.5 text-cyan-400" />
             <span className="font-medium capitalize">{currentUserRole}</span>
+          </button>
+
+          {/* Light / Dark Mode Toggle */}
+          <button
+            onClick={toggleTheme}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition border ${
+              isLight
+                ? 'bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-900 shadow-sm'
+                : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-200'
+            }`}
+            title={isLight ? 'Switch to Dark Mode (Terminal View)' : 'Switch to Light Mode'}
+            aria-label={isLight ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {isLight ? (
+              <>
+                <Moon className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="font-semibold text-[11px]">Dark</span>
+              </>
+            ) : (
+              <>
+                <Sun className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-semibold text-[11px]">Light</span>
+              </>
+            )}
           </button>
 
           {/* Export Report Modal Trigger */}

@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Candle, TechnicalIndicators } from '../../types/market';
 import { getFallbackCandles, getFallbackTechnicals } from '../../services/clientFallbackData';
 import { LineChart, CheckSquare, Square, Eye, EyeOff, Sliders, TrendingUp, Info } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 interface TechnicalAnalysisViewProps {
   symbol: string;
 }
 
 export const TechnicalAnalysisView: React.FC<TechnicalAnalysisViewProps> = ({ symbol }) => {
+  const { isLight } = useTheme();
   const [timeframe, setTimeframe] = useState<string>('15m');
   const [candles, setCandles] = useState<Candle[]>(() => getFallbackCandles(symbol));
   const [indicators, setIndicators] = useState<TechnicalIndicators | null>(() => getFallbackTechnicals(symbol).indicators);
@@ -243,8 +245,8 @@ export const TechnicalAnalysisView: React.FC<TechnicalAnalysisViewProps> = ({ sy
             const p = maxPrice - fraction * priceRange;
             return (
               <g key={fraction}>
-                <line x1={padding.left} y1={y} x2={chartWidth - padding.right} y2={y} stroke="#1e293b" strokeDasharray="3 3" />
-                <text x={chartWidth - padding.right + 6} y={y + 4} fill="#64748b" fontSize="10" fontFamily="'Times New Roman', Times, serif">
+                <line x1={padding.left} y1={y} x2={chartWidth - padding.right} y2={y} stroke={isLight ? '#e2e8f0' : '#1e293b'} strokeDasharray="3 3" />
+                <text x={chartWidth - padding.right + 6} y={y + 4} fill={isLight ? '#475569' : '#64748b'} fontSize="10" fontFamily="'Times New Roman', Times, serif">
                   ₹{p.toFixed(1)}
                 </text>
               </g>

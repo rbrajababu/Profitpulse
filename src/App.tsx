@@ -23,8 +23,10 @@ import { ExportModal } from './components/modals/ExportModal';
 import { wsClient, ConnectionStatus, PriceTick } from './services/websocketStream';
 import { FALLBACK_INSTRUMENTS, getFallbackProviderStatus } from './services/clientFallbackData';
 import { Activity, ShieldAlert } from 'lucide-react';
+import { useTheme } from './context/ThemeContext';
 
 export default function App() {
+  const { isLight } = useTheme();
   const [instruments, setInstruments] = useState<Instrument[]>(FALLBACK_INSTRUMENTS);
   const [selectedSymbol, setSelectedSymbol] = useState<string>('NIFTY');
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
@@ -152,7 +154,7 @@ export default function App() {
   const activeInstrument = instruments.find(i => i.symbol === selectedSymbol) || instruments[0];
 
   return (
-    <div className="min-h-screen bg-[#0b0f17] text-slate-100 flex flex-col font-serif selection:bg-cyan-500 selection:text-white">
+    <div className={`min-h-screen ${isLight ? 'theme-light bg-slate-50 text-slate-900' : 'bg-[#0b0f17] text-slate-100'} flex flex-col font-serif selection:bg-cyan-500 selection:text-white transition-colors duration-150`}>
       {/* Top Header & Live Ticker Bar with WebSocket Telemetry */}
       <HeaderBar
         instruments={instruments}

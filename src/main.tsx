@@ -3,6 +3,7 @@ import App from './App.tsx';
 import './index.css';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { setupApiFallbackInterceptor } from './services/setupApiFallback';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Initialize resilient API fallback interceptor for static GitHub Pages or serverless hosting
 try {
@@ -13,6 +14,8 @@ try {
 
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </ErrorBoundary>
 );
