@@ -152,6 +152,21 @@ class WebSocketStreamClient {
     this.simulationInterval = setInterval(() => {
       if (this.subscribedSymbols.size === 0) return;
 
+      // Check IST market hours (Mon-Fri 09:15 - 15:30 IST)
+      const now = new Date();
+      const istDate = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+      const hours = istDate.getUTCHours();
+      const minutes = istDate.getUTCMinutes();
+      const day = istDate.getUTCDay();
+      const currentMinutes = hours * 60 + minutes;
+      const isWeekday = day >= 1 && day <= 5;
+      const isOpen = isWeekday && currentMinutes >= 9 * 60 + 15 && currentMinutes <= 15 * 60 + 30;
+
+      if (!isOpen) {
+        // Market is closed (After-Hours / Weekend): Keep prices strictly frozen at official closing data!
+        return;
+      }
+
       const symbols = Array.from(this.subscribedSymbols);
       // Pick 1 to 2 symbols to update
       const pickedSymbol = symbols[Math.floor(Math.random() * symbols.length)];

@@ -28,10 +28,11 @@ marketScheduler.start();
 // -------------------------------------------------------------
 
 import { nseWebService } from './server/nse-fetcher';
+import { realMarketFetcher } from './server/real-market-fetcher';
 
 // 1. Market Overview & Status
 app.get('/api/market/status', (req: Request, res: Response) => {
-  const tradingHours = nseWebService.isTradingHours();
+  const tradingHours = realMarketFetcher.getMarketHours();
   res.json({
     status: db.providerStatus,
     tradingHours,
@@ -42,7 +43,7 @@ app.get('/api/market/status', (req: Request, res: Response) => {
   });
 });
 
-// Force manual instant sync with NSE Website
+// Force manual instant sync with Google Finance & NSE
 app.post('/api/market/sync-nse-now', async (req: Request, res: Response) => {
   try {
     const result = await marketScheduler.performMinuteSync();
@@ -51,7 +52,7 @@ app.post('/api/market/sync-nse-now', async (req: Request, res: Response) => {
       result,
       status: db.providerStatus,
       nextSyncInSeconds: marketScheduler.getNextSyncSeconds(),
-      tradingHours: nseWebService.isTradingHours(),
+      tradingHours: realMarketFetcher.getMarketHours(),
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

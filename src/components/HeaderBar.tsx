@@ -87,19 +87,19 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isMarketOpen ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75`}></span>
             <span className={`relative inline-flex rounded-full h-2 w-2 ${isMarketOpen ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
           </span>
-          <span className="font-semibold text-white">NSE INDIA LIVE FEED</span>
+          <span className="font-semibold text-white">GOOGLE FINANCE & NSE LIVE FEED</span>
           <span className="text-slate-600">·</span>
           <span className={isMarketOpen ? 'text-emerald-400 font-semibold' : 'text-amber-400 font-semibold'}>
-            {tradingHours ? tradingHours.session : 'NSE SESSION (09:15 - 15:30 IST)'}
+            {tradingHours ? tradingHours.session : 'MARKET CLOSED (AFTER HOURS)'}
           </span>
           <span className="text-slate-600">·</span>
-          <span className="text-slate-400">Time: {tradingHours?.istTime || new Date().toLocaleTimeString('en-IN')}</span>
+          <span className="text-slate-400">IST: {tradingHours?.istTime || new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
         </div>
 
-        {/* Next 60-Second Refresh Countdown */}
+        {/* Next Refresh Countdown / Status */}
         <div className="flex items-center gap-1.5 shrink-0 px-2 py-0.5 rounded bg-slate-950/80 border border-slate-800 text-[10px] text-cyan-300 font-mono-num">
           <Clock className="w-3 h-3 text-cyan-400" />
-          <span>Next NSE Refresh: <strong className="text-white">{countdown}s</strong></span>
+          <span>{isMarketOpen ? `Next Exchange Sync: ` : `Market Closed: `}<strong className="text-white">{isMarketOpen ? `${countdown}s` : 'Data Frozen at Close'}</strong></span>
         </div>
 
         {/* Ticker tape items */}
@@ -208,7 +208,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             title="Force immediate live data update from NSE India website"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isSyncing ? 'animate-spin' : ''}`} />
-            <span>{isSyncing ? 'Syncing...' : 'Sync NSE Now'}</span>
+            <span>{isSyncing ? 'Syncing...' : 'Sync Live Market Now'}</span>
           </button>
 
           {syncFeedback && (

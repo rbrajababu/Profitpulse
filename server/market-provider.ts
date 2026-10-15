@@ -29,9 +29,7 @@ export class DemonstrationDataAdapter implements MarketDataProvider {
   }
 
   async fetchCandles(symbol: string, timeframe: string): Promise<Candle[]> {
-    const tfMap = db.candles.get(symbol);
-    if (!tfMap) return [];
-    return tfMap[timeframe] || tfMap['15m'] || [];
+    return realMarketFetcher.fetchHistoricalCandles(symbol, timeframe);
   }
 
   getStatus(): ProviderStatus {
@@ -150,11 +148,13 @@ export function classifyOIBuildup(): OIBuildupItem[] {
   return results;
 }
 
+import { realMarketFetcher } from './real-market-fetcher';
 import { nseWebService } from './nse-fetcher';
 
 /**
  * Scheduled Worker to manage continuous market data stream,
- * 60-second NSE website live update cycle during trading hours, and background tasks.
+ * 60-second real-time sync with Google Finance & NSE website,
+ * and zero-fluctuation enforcement after market close.
  */
 export class BackgroundMarketScheduler {
   private tickTimer: NodeJS.Timeout | null = null;
@@ -166,34 +166,52 @@ export class BackgroundMarketScheduler {
     if (this.isRunning) return;
     this.isRunning = true;
 
-    // Sub-second tick update for continuous micro-fluctuations (3s)
+    // Initial sync with real market data (Google Finance & NSE) immediately on startup
+    this.performMinuteSync();
+
+    // Check market hours: only tick micro-fluctuations IF AND ONLY IF market is actively OPEN
     this.tickTimer = setInterval(() => {
       try {
-        db.tickMarket();
+        const hours = realMarketFetcher.getMarketHours();
+        if (hours.isOpen) {
+          db.tickMarket();
+        }
       } catch (err) {
         console.error('Error in background market tick:', err);
       }
-    }, 3000);
-
-    // Initial sync upon startup
-    this.performMinuteSync();
+    }, 4000);
 
     // Minutely scheduled worker (every 60,000 ms = 1 minute)
     this.minuteTimer = setInterval(() => {
       this.performMinuteSync();
     }, 60000);
 
-    console.log('[Scheduler] Background market daemon started with 60-second NSE live update cycle.');
+    console.log('[Scheduler] Background market daemon started with Google Finance & NSE live sync.');
   }
 
   public async performMinuteSync() {
     this.nextMinuteSync = Date.now() + 60000;
     try {
-      const result = await nseWebService.performScheduledMinuteUpdate();
-      console.log(`[NSE Worker] Minute update completed: ${result.message}`);
-      return result;
+      // 1. Fetch real prices from Google Finance & NSE feeds
+      const realResult = await realMarketFetcher.syncAllRealMarketData();
+      console.log(`[Market Sync] Updated ${realResult.updatedCount} instruments from ${realResult.sources.join(', ')}.`);
+
+      // 2. Also run NSE option chain sync if available
+      try {
+        await nseWebService.performScheduledMinuteUpdate();
+      } catch {
+        // Handled internally
+      }
+
+      const marketHours = realMarketFetcher.getMarketHours();
+      return {
+        success: true,
+        updatedCount: realResult.updatedCount,
+        sources: realResult.sources,
+        marketHours,
+      };
     } catch (err) {
-      console.error('[NSE Worker] Error in minute sync:', err);
+      console.error('[Market Sync] Error in minute sync:', err);
     }
   }
 

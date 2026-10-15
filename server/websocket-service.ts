@@ -8,6 +8,7 @@ import { Server as HttpServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { db } from './db';
 import { Instrument } from '../src/types/market';
+import { realMarketFetcher } from './real-market-fetcher';
 
 export interface PriceTickPayload {
   type: 'PRICE_TICK';
@@ -124,6 +125,12 @@ export class WebSocketStreamService {
 
     this.streamingTimer = setInterval(() => {
       if (!this.wss || this.wss.clients.size === 0) return;
+
+      const hours = realMarketFetcher.getMarketHours();
+      if (!hours.isOpen) {
+        // When market is closed, DO NOT broadcast fluctuating prices. Market is locked at closing prices.
+        return;
+      }
 
       const symbols = Array.from(db.instruments.keys());
       if (symbols.length === 0) return;
